@@ -35,9 +35,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, authorizedUsers }
     if (!selectedUser) return;
     
     setError('');
-    setIsLoading(true);
-
-    try {
+    setIsLoading(true);    try {
       // Simulation de vérification du mot de passe
       if (password.length < 4) {
         setError('Mot de passe trop court. Minimum 4 caractères.');
@@ -49,8 +47,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, authorizedUsers }
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Connexion réussie
+      console.log('Tentative de connexion avec:', selectedUser.name);
       onLogin(selectedUser);
+      console.log('Fonction onLogin appelée avec succès');
     } catch (err) {
+      console.error('Erreur lors de la connexion:', err);
       setError('Erreur de connexion. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
@@ -243,3 +244,4 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, authorizedUsers }
     </div>
   );
 };
+

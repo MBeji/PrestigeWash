@@ -7,8 +7,8 @@ import { UserHeader } from './components/Auth/UserHeader';
 import { Calendar } from './components/Calendar';
 
 const AppContent: React.FC = () => {  const { user, isAuthenticated, isLoading } = useAuth();
-
   if (isLoading) {
+    console.log('Application en cours de chargement...');
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
@@ -18,6 +18,7 @@ const AppContent: React.FC = () => {  const { user, isAuthenticated, isLoading }
   }
 
   if (!isAuthenticated) {
+    console.log('Utilisateur non authentifié - affichage du formulaire de connexion');
     return (
       <div className="auth-container">
         <div className="auth-background">
@@ -27,6 +28,7 @@ const AppContent: React.FC = () => {  const { user, isAuthenticated, isLoading }
     );
   }
 
+  console.log('Utilisateur authentifié:', user?.name, '- Affichage du calendrier');
   const handleBookingCreate = (date: string, timeSlot: string) => {
     console.log(`Nouvelle réservation: ${user?.name} - ${date} - ${timeSlot}`);
   };

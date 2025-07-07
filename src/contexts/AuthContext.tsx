@@ -26,23 +26,64 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AuthorizedUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
   // Vérifier si l'utilisateur est déjà connecté au démarrage
   useEffect(() => {
-    const savedUser = localStorage.getItem('autowash_user');
-    if (savedUser) {
+    const loadUser = () => {
       try {
-        const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
+        let savedUser = null;
+        
+        // Essayer localStorage d'abord
+        if (typeof Storage !== 'undefined' && localStorage) {
+          savedUser = localStorage.getItem('autowash_user');
+        }
+        
+        // Fallback vers sessionStorage si localStorage n'est pas disponible
+        if (!savedUser && sessionStorage) {
+          savedUser = sessionStorage.getItem('autowash_user');
+        }
+        
+        if (savedUser) {
+          const parsedUser = JSON.parse(savedUser);
+          console.log('Utilisateur récupéré:', parsedUser.name);
+          setUser(parsedUser);
+        }
       } catch (error) {
         console.error('Erreur lors de la récupération de l\'utilisateur:', error);
-        localStorage.removeItem('autowash_user');
+        // Nettoyer les données corrompues
+        try {
+          localStorage?.removeItem('autowash_user');
+          sessionStorage?.removeItem('autowash_user');
+        } catch (cleanupError) {
+          console.warn('Impossible de nettoyer le storage:', cleanupError);
+        }
+      } finally {
+        setIsLoading(false);
       }
+    };
+
+    loadUser();
+  }, []);const login = (userData: AuthorizedUser) => {
+    try {
+      console.log('Début de la connexion pour:', userData.name);
+      setUser(userData);
+      
+      // Vérifier si localStorage est disponible
+      if (typeof Storage !== 'undefined' && localStorage) {
+        localStorage.setItem('autowash_user', JSON.stringify(userData));
+        console.log('Utilisateur sauvegardé dans localStorage');
+      } else {
+        console.warn('localStorage non disponible - utilisation de sessionStorage');
+        if (sessionStorage) {
+          sessionStorage.setItem('autowash_user', JSON.stringify(userData));
+        }
+      }
+      
+      console.log('Connexion terminée avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la connexion:', error);
+      // Même en cas d'erreur de storage, on connecte l'utilisateur
+      setUser(userData);
     }
-    setIsLoading(false);
-  }, []);  const login = (userData: AuthorizedUser) => {
-    setUser(userData);
-    localStorage.setItem('autowash_user', JSON.stringify(userData));
   };
 
   const logout = () => {
