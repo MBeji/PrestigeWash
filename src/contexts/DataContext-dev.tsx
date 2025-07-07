@@ -86,8 +86,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     const dateStr = date.toISOString().split('T')[0]
     return bookings.filter(booking => booking.date === dateStr)
   }
-
-  const canUserBook = (userId: string, date: Date) => {
+  const canUserBook = (_userId: string, _date: Date) => {
     return { canBook: true }
   }
 
