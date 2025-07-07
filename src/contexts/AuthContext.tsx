@@ -25,44 +25,28 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AuthorizedUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  // Vérifier si l'utilisateur est déjà connecté au démarrage
+  const [isLoading, setIsLoading] = useState(true);  // Vérifier si l'utilisateur est déjà connecté au démarrage
   useEffect(() => {
-    const loadUser = () => {
-      try {
-        let savedUser = null;
-        
-        // Essayer localStorage d'abord
-        if (typeof Storage !== 'undefined' && localStorage) {
-          savedUser = localStorage.getItem('autowash_user');
-        }
-        
-        // Fallback vers sessionStorage si localStorage n'est pas disponible
-        if (!savedUser && sessionStorage) {
-          savedUser = sessionStorage.getItem('autowash_user');
-        }
-        
-        if (savedUser) {
-          const parsedUser = JSON.parse(savedUser);
-          console.log('Utilisateur récupéré:', parsedUser.name);
-          setUser(parsedUser);
-        }
-      } catch (error) {
-        console.error('Erreur lors de la récupération de l\'utilisateur:', error);
-        // Nettoyer les données corrompues
-        try {
-          localStorage?.removeItem('autowash_user');
-          sessionStorage?.removeItem('autowash_user');
-        } catch (cleanupError) {
-          console.warn('Impossible de nettoyer le storage:', cleanupError);
-        }
-      } finally {
-        setIsLoading(false);
+    console.log('AuthContext: Initialisation...');
+    
+    // Simplifier le chargement pour éviter les problèmes
+    try {
+      const savedUser = localStorage.getItem('autowash_user');
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        console.log('AuthContext: Utilisateur récupéré -', parsedUser.name);
+        setUser(parsedUser);
       }
-    };
+    } catch (error) {
+      console.error('AuthContext: Erreur lors de la récupération -', error);
+    }
+    
+    // Forcer la fin du chargement
+    setIsLoading(false);
+    console.log('AuthContext: Chargement terminé');
+  }, []);
 
-    loadUser();
-  }, []);const login = (userData: AuthorizedUser) => {
+  const login = (userData: AuthorizedUser) => {
     try {
       console.log('Début de la connexion pour:', userData.name);
       setUser(userData);
