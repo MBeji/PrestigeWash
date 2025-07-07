@@ -9,6 +9,13 @@ import { Calendar } from './components/Calendar';
 const AppContent: React.FC = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
 
+  // Logs de débogage pour tracer le flux
+  console.log('📊 État d\'authentification:', { 
+    user: user?.name, 
+    isAuthenticated, 
+    isLoading 
+  });
+
   if (isLoading) {
     return (
       <div className="loading-container">
@@ -19,8 +26,17 @@ const AppContent: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <AuthModeSelector />;
+    console.log('🔑 Affichage du formulaire d\'authentification');
+    return (
+      <div className="auth-container">
+        <div className="auth-background">
+          <AuthModeSelector />
+        </div>
+      </div>
+    );
   }
+
+  console.log('🎯 Utilisateur connecté, affichage du calendrier');
 
   const handleBookingCreate = (date: string, timeSlot: string) => {
     console.log(`Nouvelle réservation: ${user?.name} - ${date} - ${timeSlot}`);
