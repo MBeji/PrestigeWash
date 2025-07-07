@@ -25,23 +25,32 @@ Vercel détecte automatiquement :
 - ✅ **Output Directory** : `dist`
 - ✅ **Install Command** : `npm install`
 
-### 3. Variables d'Environnement
+### 3. Variables d'Environnement ⚠️ IMPORTANT
 
-Ajouter les variables suivantes dans Vercel :
+Les variables d'environnement doivent être configurées dans le **Dashboard Vercel**, pas dans le code.
 
+**Variables requises :**
 ```bash
-# Supabase Configuration
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-**Comment les ajouter :**
-1. Dans la section **"Environment Variables"** du projet
+**Étapes dans Vercel Dashboard :**
+1. Aller dans votre projet > **Settings** > **Environment Variables**
 2. Cliquer sur **"Add New"**
 3. Ajouter chaque variable :
-   - Name: `VITE_SUPABASE_URL`
-   - Value: `https://your-project.supabase.co`
-   - Environment: `Production`, `Preview`, `Development`
+
+**Variable 1 :**
+- **Name** : `VITE_SUPABASE_URL`
+- **Value** : `https://your-project-id.supabase.co`
+- **Environment** : Cocher `Production`, `Preview`, et `Development`
+
+**Variable 2 :**
+- **Name** : `VITE_SUPABASE_ANON_KEY`
+- **Value** : Votre clé anonyme Supabase
+- **Environment** : Cocher `Production`, `Preview`, et `Development`
+
+⚠️ **Ne jamais** inclure les vraies valeurs dans le code source ou vercel.json !
 
 ### 4. Déploiement
 
