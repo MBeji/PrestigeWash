@@ -40,14 +40,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     }
     setIsLoading(false);
-  }, []);
-  const login = (userData: AuthorizedUser) => {
-    console.log('🔐 Tentative de connexion avec:', userData);
+  }, []);  const login = (userData: AuthorizedUser) => {
     setUser(userData);
     localStorage.setItem('autowash_user', JSON.stringify(userData));
-    
-    // Log de connexion (en production, envoyer au serveur)
-    console.log(`✅ Connexion réussie: ${userData.name} (${userData.title}) à ${new Date().toLocaleString()}`);
   };
 
   const logout = () => {

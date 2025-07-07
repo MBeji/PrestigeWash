@@ -53,13 +53,15 @@ const AppModeSelector: React.FC = () => {
   }, []);
 
   return (
-    <React.Suspense fallback={<LoadingScreen />}>
-      {appMode === 'production' ? (
-        <ProductionApp />
-      ) : (
-        <DevelopmentApp />
-      )}
-    </React.Suspense>
+    <div className="app-container">
+      <React.Suspense fallback={<LoadingScreen />}>
+        {appMode === 'production' ? (
+          <ProductionApp />
+        ) : (
+          <DevelopmentApp />
+        )}
+      </React.Suspense>
+    </div>
   );
 };
 

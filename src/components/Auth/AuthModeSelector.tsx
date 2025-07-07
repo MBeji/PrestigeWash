@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Database, Users } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { LoginForm } from './LoginForm';
@@ -8,9 +8,13 @@ import { authorizedUsers } from '../../config/authorizedUsers';
 
 type AuthMode = 'mock' | 'supabase';
 
-export const AuthModeSelector: React.FC = () => {
+export const AuthModeSelector: React.FC = React.memo(() => {
   const [authMode, setAuthMode] = useState<AuthMode>('mock');
   const { login } = useAuth();
+
+  const handleModeChange = useCallback((mode: AuthMode) => {
+    setAuthMode(mode);
+  }, []);
 
   if (authMode === 'supabase') {
     return (
@@ -19,7 +23,7 @@ export const AuthModeSelector: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setAuthMode('mock')}
+            onClick={() => handleModeChange('mock')}
             className="auth-mode-button"
             style={{ fontSize: '12px', padding: '4px 8px' }}
           >
@@ -38,7 +42,7 @@ export const AuthModeSelector: React.FC = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setAuthMode('supabase')}
+          onClick={() => handleModeChange('supabase')}
           className="auth-mode-button"
           style={{ fontSize: '12px', padding: '4px 8px' }}
         >
@@ -53,4 +57,4 @@ export const AuthModeSelector: React.FC = () => {
       />
     </div>
   );
-};
+});
