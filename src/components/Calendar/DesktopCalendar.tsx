@@ -18,7 +18,7 @@ import { Button } from '../ui/Button';
 import { CalendarSkeleton } from './CalendarSkeleton';
 import { Spinner } from '../ui/Spinner';
 import { useConfirm } from '../../hooks/useConfirm';
-import { useData, type Booking } from '../../contexts/DataContext-dev';
+import { useSmartData, type Booking } from '../../contexts/SmartDataProvider';
 
 interface DesktopCalendarProps {
   user: any;
@@ -44,7 +44,7 @@ export const DesktopCalendar: React.FC<DesktopCalendarProps> = ({ user, onBookin
     cancelBooking,
     getFutureBookings,
     getBookingsForDate,
-  } = useData();
+  } = useSmartData();
 
   const { confirm } = useConfirm();
 
@@ -195,7 +195,7 @@ export const DesktopCalendar: React.FC<DesktopCalendarProps> = ({ user, onBookin
                       
                       <div className="time-slots">
                         {timeSlots.map((slot) => {
-                          const booking = dayBookings.find(b => b.time_slot === slot.id);
+                          const booking = dayBookings.find((b: Booking) => b.time_slot === slot.id);
                           const isUserBooking = booking?.user_id === user?.id;
                           const isBooked = !!booking;
                           const canBook = isAvailable && !isBooked && user;
@@ -263,7 +263,7 @@ export const DesktopCalendar: React.FC<DesktopCalendarProps> = ({ user, onBookin
               </CardContent>
             </Card>
           ) : (
-            userFutureBookings.map((booking) => (
+            userFutureBookings.map((booking: Booking) => (
               <Card key={booking.id} className="future-booking-card">
                 <CardHeader>
                   <div className="booking-header">

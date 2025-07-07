@@ -2538,6 +2538,8 @@ body {
   position: relative;
   text-align: center;
   margin: 1.5rem 0;
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
 .auth-divider::before {
@@ -3187,4 +3189,44 @@ body {
 
 .swipe-hint {
   animation: swipeHint 4s ease-in-out infinite;
+}
+
+/* =====  NOTIFICATIONS DE MODE ===== */
+
+.development-notice,
+.production-notice {
+  padding: 1rem 2rem;
+  margin-bottom: 1rem;
+}
+
+.development-notice .notice-card {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-left: 4px solid #f1c40f;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.production-notice .notice-card.success {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-left: 4px solid #28a745;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.development-notice h3 {
+  color: #856404;
+  margin-bottom: 0.5rem;
+}
+
+.production-notice h3 {
+  color: #155724;
+  margin-bottom: 0.5rem;
+}
+
+.development-notice p,
+.production-notice p {
+  margin: 0;
+  color: #6c757d;
 }
