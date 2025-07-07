@@ -1,0 +1,317 @@
+import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight, Car, Clock, Trash2, AlertCircle } from 'lucide-react';
+import { 
+  startOfMonth, 
+  endOfMonth, 
+  eachDayOfInterval, 
+  format, 
+  isToday, 
+  isFriday,
+  addMonths,
+  subMonths,
+  isBefore,
+  startOfDay
+} from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card';
+import { Button } from './ui/Button';
+import { CalendarSkeleton } from './Calendar/CalendarSkeleton';
+import { Spinner } from './ui/Spinner';
+import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../hooks/useConfirm';
+import { useData, type Booking } from '../contexts/DataContext';
+
+interface CalendarProps {
+  user: any;
+  onBookingCreate?: (date: string, timeSlot: string) => void;
+}
+
+const timeSlots = [
+  { id: '08:00-10:00', label: '08:00 - 10:00', start: '08:00', end: '10:00' },
+  { id: '10:00-12:00', label: '10:00 - 12:00', start: '10:00', end: '12:00' },
+  { id: '14:00-16:00', label: '14:00 - 16:00', start: '14:00', end: '16:00' }
+];
+
+export const Calendar: React.FC<CalendarProps> = ({ user, onBookingCreate }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [viewMode, setViewMode] = useState<'current' | 'history'>('current');
+  const [isBooking, setIsBooking] = useState(false);
+  const [isCanceling, setIsCanceling] = useState<string | null>(null);
+
+  // Utiliser le nouveau système de données Supabase
+  const {
+    bookings,
+    bookingsLoading,
+    createBooking,
+    cancelBooking,
+    getUserBookings,
+    getFutureBookings,
+    getBookingsForDate,
+    canUserBook
+  } = useData();
+
+  const { showError, showSuccess } = useToast();
+  const { confirm } = useConfirm();
+
+  // Naviguer dans les mois
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setCurrentDate(direction === 'prev' ? subMonths(currentDate, 1) : addMonths(currentDate, 1));
+  };
+
+  // Vérifier si un créneau est disponible
+  const isSlotAvailable = (date: Date, slotId: string): boolean => {
+    const dateBookings = getBookingsForDate(date);
+    return !dateBookings.some(booking => booking.time_slot === slotId);
+  };
+
+  // Gérer la réservation
+  const handleBooking = async (date: Date, timeSlot: string) => {
+    if (!user?.id) return;
+
+    // Vérifier si l'utilisateur peut réserver
+    const { canBook, reason } = canUserBook(user.id, date);
+    if (!canBook) {
+      showError('Réservation impossible', reason || 'Vous ne pouvez pas réserver ce créneau');
+      return;
+    }
+
+    setIsBooking(true);
+    try {
+      const success = await createBooking(user.id, date, timeSlot);
+      if (success && onBookingCreate) {
+        onBookingCreate(format(date, 'yyyy-MM-dd'), timeSlot);
+      }
+    } finally {
+      setIsBooking(false);
+    }
+  };
+
+  // Gérer l'annulation
+  const handleCancelBooking = async (booking: Booking) => {
+    const shouldCancel = await confirm({
+      title: 'Confirmer l\'annulation',
+      message: `Voulez-vous vraiment annuler votre réservation du ${format(new Date(booking.date), 'EEEE dd MMMM yyyy', { locale: fr })} à ${booking.time_slot} ?`,
+      confirmText: 'Annuler la réservation',
+      cancelText: 'Conserver',
+      variant: 'danger'
+    });
+
+    if (!shouldCancel) return;
+
+    setIsCanceling(booking.id);
+    try {
+      await cancelBooking(booking.id);
+    } finally {
+      setIsCanceling(null);
+    }
+  };
+
+  // Obtenir les jours du mois
+  const getDaysInMonth = () => {
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+    return eachDayOfInterval({ start: monthStart, end: monthEnd });
+  };
+
+  // Obtenir les réservations futures de l'utilisateur
+  const userFutureBookings = user?.id ? getFutureBookings(user.id) : [];
+
+  if (bookingsLoading) {
+    return <CalendarSkeleton />;
+  }
+
+  return (
+    <div className="calendar-container">
+      {/* En-tête du calendrier */}
+      <Card className="calendar-header-card">
+        <CardHeader>
+          <div className="calendar-header">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigateMonth('prev')}
+              className="calendar-nav-button"
+            >
+              <ChevronLeft size={16} />
+            </Button>
+            
+            <CardTitle className="calendar-title">
+              {format(currentDate, 'MMMM yyyy', { locale: fr })}
+            </CardTitle>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigateMonth('next')}
+              className="calendar-nav-button"
+            >
+              <ChevronRight size={16} />
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Sélecteur de vue */}
+      <div className="view-selector">
+        <Button
+          variant={viewMode === 'current' ? 'default' : 'outline'}
+          onClick={() => setViewMode('current')}
+          size="sm"
+        >
+          Réservations à venir
+        </Button>
+        <Button
+          variant={viewMode === 'history' ? 'default' : 'outline'}
+          onClick={() => setViewMode('history')}
+          size="sm"
+        >
+          Mes réservations futures
+        </Button>
+      </div>
+
+      {viewMode === 'current' ? (
+        /* Vue calendrier */
+        <div className="calendar-grid-container">
+          <div className="calendar-grid">
+            {getDaysInMonth().map((day) => {
+              const dayBookings = getBookingsForDate(day);
+              const isAvailable = isFriday(day) && !isBefore(day, startOfDay(new Date()));
+
+              return (
+                <Card
+                  key={day.toISOString()}
+                  className={`calendar-day ${
+                    isToday(day) ? 'calendar-day-today' : ''
+                  } ${
+                    isFriday(day) ? 'calendar-day-friday' : 'calendar-day-disabled'
+                  }`}
+                >
+                  <CardHeader className="calendar-day-header">
+                    <CardTitle className="calendar-day-number">
+                      {format(day, 'd')}
+                    </CardTitle>
+                    <CardDescription className="calendar-day-name">
+                      {format(day, 'EEE', { locale: fr })}
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  {isFriday(day) && (
+                    <CardContent className="calendar-day-content">
+                      {timeSlots.map((slot) => {
+                        const booking = dayBookings.find(b => b.time_slot === slot.id);
+                        const isUserBooking = booking?.user_id === user?.id;
+                        const available = isSlotAvailable(day, slot.id) && isAvailable;
+
+                        return (
+                          <div key={slot.id} className="time-slot">
+                            <div className="time-slot-header">
+                              <Clock size={14} />
+                              <span className="time-slot-label">{slot.label}</span>
+                            </div>
+                            
+                            {booking ? (
+                              <div className={`booking-info ${isUserBooking ? 'user-booking' : 'other-booking'}`}>
+                                <Car size={14} />
+                                <span className="booking-user">
+                                  {isUserBooking ? 'Votre réservation' : booking.user?.name || 'Réservé'}
+                                </span>
+                                {isUserBooking && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleCancelBooking(booking)}
+                                    disabled={isCanceling === booking.id}
+                                    className="cancel-button"
+                                  >
+                                    {isCanceling === booking.id ? (
+                                      <Spinner size="sm" />
+                                    ) : (
+                                      <Trash2 size={14} />
+                                    )}
+                                  </Button>
+                                )}
+                              </div>
+                            ) : available ? (
+                              <Button
+                                size="sm"
+                                onClick={() => handleBooking(day, slot.id)}
+                                disabled={isBooking}
+                                className="book-button"
+                              >
+                                {isBooking ? <Spinner size="sm" /> : 'Réserver'}
+                              </Button>
+                            ) : (
+                              <div className="slot-unavailable">
+                                {!isAvailable ? 'Passé' : 'Complet'}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </CardContent>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        /* Vue des réservations futures */
+        <div className="future-bookings">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle size={20} />
+                Mes réservations futures
+              </CardTitle>
+              <CardDescription>
+                Vous pouvez annuler vos réservations futures si nécessaire
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {userFutureBookings.length === 0 ? (
+                <div className="no-bookings">
+                  <p>Aucune réservation future</p>
+                </div>
+              ) : (
+                <div className="bookings-list">
+                  {userFutureBookings.map((booking) => (
+                    <div key={booking.id} className="booking-item">
+                      <div className="booking-details">
+                        <div className="booking-date">
+                          <Car size={16} />
+                          {format(new Date(booking.date), 'EEEE dd MMMM yyyy', { locale: fr })}
+                        </div>
+                        <div className="booking-time">
+                          <Clock size={16} />
+                          {booking.time_slot}
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCancelBooking(booking)}
+                        disabled={isCanceling === booking.id}
+                        className="cancel-future-button"
+                      >
+                        {isCanceling === booking.id ? (
+                          <Spinner size="sm" text="Annulation..." />
+                        ) : (
+                          <>
+                            <Trash2 size={14} />
+                            Annuler
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+};
