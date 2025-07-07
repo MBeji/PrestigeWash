@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Settings, Database, Users } from 'lucide-react';
+import { Database, Users } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
 import { LoginForm } from './LoginForm';
 import { SupabaseLoginForm } from './SupabaseLoginForm';
 import { useAuth } from '../../contexts/AuthContext';
@@ -16,15 +15,16 @@ export const AuthModeSelector: React.FC = () => {
   if (authMode === 'supabase') {
     return (
       <div>
-        <div className="auth-mode-switch">
+        <div className="auth-mode-switch" style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setAuthMode('mock')}
             className="auth-mode-button"
+            style={{ fontSize: '12px', padding: '4px 8px' }}
           >
-            <Users size={16} />
-            Mode Développement
+            <Users size={14} />
+            Mode Dev
           </Button>
         </div>
         <SupabaseLoginForm />
@@ -34,15 +34,16 @@ export const AuthModeSelector: React.FC = () => {
 
   return (
     <div>
-      <div className="auth-mode-switch">
+      <div className="auth-mode-switch" style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setAuthMode('supabase')}
           className="auth-mode-button"
+          style={{ fontSize: '12px', padding: '4px 8px' }}
         >
-          <Database size={16} />
-          Mode Production (Supabase)
+          <Database size={14} />
+          Mode Prod
         </Button>
       </div>
       
@@ -50,35 +51,6 @@ export const AuthModeSelector: React.FC = () => {
         onLogin={login}
         authorizedUsers={authorizedUsers}
       />
-      
-      {/* Banner d'information sur le mode développement */}
-      <div className="dev-mode-banner">
-        <Card className="dev-banner-card">
-          <CardHeader>
-            <CardTitle className="dev-banner-title">
-              <Settings size={18} />
-              Mode Développement
-            </CardTitle>
-            <CardDescription>
-              Authentification simulée pour le développement. 
-              Basculez vers "Mode Production" pour utiliser Supabase.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="dev-features">
-              <div className="dev-feature">
-                ✅ <strong>Authentification simulée</strong> - Aucune configuration requise
-              </div>
-              <div className="dev-feature">
-                ✅ <strong>Utilisateurs prédéfinis</strong> - 11 membres CODIR + 2 viewers
-              </div>
-              <div className="dev-feature">
-                ⚡ <strong>Développement rapide</strong> - Pas besoin de base de données
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 };
