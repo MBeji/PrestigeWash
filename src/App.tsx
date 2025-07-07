@@ -1,13 +1,13 @@
 import React from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
-import { DataProvider } from './contexts/DataContext';
+import { DataProvider } from './contexts/DataContext-dev';
 import { AuthModeSelector } from './components/Auth/AuthModeSelector';
 import { UserHeader } from './components/Auth/UserHeader';
 import { Calendar } from './components/Calendar';
 
 const AppContent: React.FC = () => {
-  const { user, isAuthenticated, login, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -17,6 +17,7 @@ const AppContent: React.FC = () => {
       </div>
     );
   }
+
   if (!isAuthenticated) {
     return <AuthModeSelector />;
   }
@@ -49,14 +50,9 @@ const AppContent: React.FC = () => {
                 Vous pouvez consulter toutes les réservations mais ne pouvez pas effectuer de nouvelles réservations.
               </p>
             </div>
-            <Calendar user={user} onBookingCreate={handleBookingCreate} />
           </div>
         )}
       </main>
-
-      <footer className="app-footer">
-        <p>&copy; 2025 Auto Wash Club VIP - Système de réservation pour le CODIR</p>
-      </footer>
     </div>
   );
 };

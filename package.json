@@ -1,13 +1,18 @@
 {
-  "name": "car-wash-calendar",
+  "name": "prestigewash",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "Calendrier de réservations VIP pour Auto Wash Club",
+  "keywords": ["react", "typescript", "vite", "supabase", "calendar", "booking"],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "vercel --prod",
+    "deploy:dev": "vercel",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.50.3",
