@@ -44,14 +44,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, authorizedUsers }
       }
 
       // Simulation d'un délai d'authentification
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Connexion réussie
-      console.log('Tentative de connexion avec:', selectedUser.name);
+      await new Promise(resolve => setTimeout(resolve, 1000));      // Connexion réussie
       onLogin(selectedUser);
-      console.log('Fonction onLogin appelée avec succès');
     } catch (err) {
-      console.error('Erreur lors de la connexion:', err);
       setError('Erreur de connexion. Veuillez réessayer.');
     } finally {
       setIsLoading(false);

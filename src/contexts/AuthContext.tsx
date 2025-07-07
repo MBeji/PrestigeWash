@@ -45,37 +45,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
     console.log('AuthContext: Chargement terminé');
   }, []);
-
   const login = (userData: AuthorizedUser) => {
+    console.log('Connexion de:', userData.name);
+    setUser(userData);
     try {
-      console.log('Début de la connexion pour:', userData.name);
-      setUser(userData);
-      
-      // Vérifier si localStorage est disponible
-      if (typeof Storage !== 'undefined' && localStorage) {
-        localStorage.setItem('autowash_user', JSON.stringify(userData));
-        console.log('Utilisateur sauvegardé dans localStorage');
-      } else {
-        console.warn('localStorage non disponible - utilisation de sessionStorage');
-        if (sessionStorage) {
-          sessionStorage.setItem('autowash_user', JSON.stringify(userData));
-        }
-      }
-      
-      console.log('Connexion terminée avec succès');
+      localStorage.setItem('autowash_user', JSON.stringify(userData));
     } catch (error) {
-      console.error('Erreur lors de la connexion:', error);
-      // Même en cas d'erreur de storage, on connecte l'utilisateur
-      setUser(userData);
+      console.error('Erreur sauvegarde localStorage:', error);
     }
   };
-
   const logout = () => {
-    if (user) {
-      console.log(`Déconnexion de ${user.name} à ${new Date().toLocaleString()}`);
-    }
     setUser(null);
-    localStorage.removeItem('autowash_user');
+    try {
+      localStorage.removeItem('autowash_user');
+    } catch (error) {
+      console.error('Erreur suppression localStorage:', error);
+    }
   };
 
   const value: AuthContextType = {
