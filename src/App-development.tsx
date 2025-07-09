@@ -9,6 +9,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { BrowserCompatibilityChecker } from './components/BrowserCompatibilityChecker';
 import { ConnectionStatus } from './components/ConnectionStatus';
 import { SupabaseStatus } from './components/SupabaseStatus';
+import OAuthCallbackHandler from './components/Auth/OAuthCallbackHandler';
 
 console.log('🚀 [App-dev] Import terminé');
 
@@ -28,7 +29,9 @@ const AppContent: React.FC = () => {
     return (
       <div className="auth-container">
         <div className="auth-background">
-          <AuthModeSelector />
+          <OAuthCallbackHandler>
+            <AuthModeSelector />
+          </OAuthCallbackHandler>
         </div>
       </div>
     );  }
