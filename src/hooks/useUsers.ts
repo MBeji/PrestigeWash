@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { requireSupabase, withSupabase } from '../lib/supabase'
 import { useToast } from '../contexts/ToastContext'
 
 export interface User {
@@ -31,13 +31,13 @@ export const useUsers = (): UseUsersReturn => {
   const [error, setError] = useState<string | null>(null)
   const { showError, showSuccess } = useToast()
 
-  // Récupérer tous les utilisateurs
-  const fetchUsers = async () => {
+  // Récupérer tous les utilisateurs  const fetchUsers = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const { data, error: fetchError } = await supabase
+      const client = requireSupabase()
+      const { data, error: fetchError } = await client
         .from('users')
         .select('*')
         .order('name', { ascending: true })
@@ -65,11 +65,11 @@ export const useUsers = (): UseUsersReturn => {
   const getUserByEmail = (email: string): User | undefined => {
     return users.find(user => user.email.toLowerCase() === email.toLowerCase())
   }
-
   // Mettre à jour un utilisateur
   const updateUser = async (id: string, updates: Partial<User>): Promise<boolean> => {
     try {
-      const { data, error: updateError } = await supabase
+      const client = requireSupabase()
+      const { data, error: updateError } = await client
         .from('users')
         .update(updates)
         .eq('id', id)
@@ -95,11 +95,11 @@ export const useUsers = (): UseUsersReturn => {
       return false
     }
   }
-
   // Créer un nouvel utilisateur
   const createUser = async (userData: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<boolean> => {
     try {
-      const { data, error: insertError } = await supabase
+      const client = requireSupabase()
+      const { data, error: insertError } = await client
         .from('users')
         .insert(userData)
         .select()
@@ -122,13 +122,13 @@ export const useUsers = (): UseUsersReturn => {
       return false
     }
   }
-
   // Supprimer un utilisateur
   const deleteUser = async (id: string): Promise<boolean> => {
     try {
       const userToDelete = getUser(id)
       
-      const { error: deleteError } = await supabase
+      const client = requireSupabase()
+      const { error: deleteError } = await client
         .from('users')
         .delete()
         .eq('id', id)
@@ -161,23 +161,26 @@ export const useUsers = (): UseUsersReturn => {
   useEffect(() => {
     fetchUsers()
   }, [])
-
   // S'abonner aux changements en temps réel
   useEffect(() => {
-    const channel = supabase
-      .channel('users_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'users' },
-        () => {
-          // Recharger les données quand il y a des changements
-          fetchUsers()
-        }
-      )
-      .subscribe()
+    const result = withSupabase(client => {
+      const channel = client
+        .channel('users_changes')
+        .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'users' },
+          () => {
+            // Recharger les données quand il y a des changements
+            fetchUsers()
+          }
+        )
+        .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
+      return () => {
+        client.removeChannel(channel)
+      }
+    })
+
+    return result || undefined
   }, [])
 
   return {

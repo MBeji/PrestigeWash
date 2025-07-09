@@ -84,13 +84,14 @@ export const useSupabaseAuth = () => {
       } catch (error) {
         if (mounted) {
           setAuthState(prev => ({ 
-            ...prev, 
-            error: error as AuthError, 
+            ...prev,            error: error as AuthError, 
             loading: false 
           }))
         }
       }
-    }    getSession()
+    }
+
+    getSession()
 
     // Écouter les changements d'authentification
     const result = withSupabase(client => {
@@ -134,13 +135,13 @@ export const useSupabaseAuth = () => {
       result?.()
     }
   }, [showError, showSuccess])
-
   // Connexion par email/mot de passe
   const signInWithPassword = async (email: string, password: string) => {
     try {
       setAuthState(prev => ({ ...prev, loading: true, error: null }))
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const client = requireSupabase()
+      const { data, error } = await client.auth.signInWithPassword({
         email,
         password
       })
@@ -189,9 +190,9 @@ export const useSupabaseAuth = () => {
         showSuccess('Connexion réussie', `Bienvenue ${mockUser.name} (Mode développement)`)
         return { success: true, data: null }
       }
-      
-      // Mode production avec Supabase réel
-      const { data, error } = await supabase.auth.signInWithOAuth({
+        // Mode production avec Supabase réel
+      const client = requireSupabase()
+      const { data, error } = await client.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
@@ -212,13 +213,13 @@ export const useSupabaseAuth = () => {
       return { success: false, error: authError }
     }
   }
-
   // Déconnexion
   const signOut = async () => {
     try {
       setAuthState(prev => ({ ...prev, loading: true }))
       
-      const { error } = await supabase.auth.signOut()
+      const client = requireSupabase()
+      const { error } = await client.auth.signOut()
       
       if (error) {
         setAuthState(prev => ({ ...prev, error, loading: false }))
@@ -234,11 +235,11 @@ export const useSupabaseAuth = () => {
       return { success: false, error: authError }
     }
   }
-
   // Réinitialisation du mot de passe
   const resetPassword = async (email: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const client = requireSupabase()
+      const { error } = await client.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`
       })
 
