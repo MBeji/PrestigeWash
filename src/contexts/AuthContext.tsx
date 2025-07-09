@@ -25,25 +25,34 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AuthorizedUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);  // Vérifier si l'utilisateur est déjà connecté au démarrage
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Vérifier si l'utilisateur est déjà connecté au démarrage
   useEffect(() => {
-    console.log('AuthContext: Initialisation...');
-    
-    // Simplifier le chargement pour éviter les problèmes
-    try {
-      const savedUser = localStorage.getItem('autowash_user');
-      if (savedUser) {
-        const parsedUser = JSON.parse(savedUser);
-        console.log('AuthContext: Utilisateur récupéré -', parsedUser.name);
-        setUser(parsedUser);
+    const initializeAuth = async () => {
+      try {
+        console.log('AuthContext: Initialisation...');
+        
+        // Ajouter un délai minimal pour éviter les problèmes de rendu
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
+        const savedUser = localStorage.getItem('autowash_user');
+        if (savedUser) {
+          const parsedUser = JSON.parse(savedUser);
+          console.log('AuthContext: Utilisateur récupéré -', parsedUser.name);
+          setUser(parsedUser);
+        }
+      } catch (error) {
+        console.error('AuthContext: Erreur lors de la récupération -', error);
+        // En cas d'erreur, nettoyer le localStorage
+        localStorage.removeItem('autowash_user');
+      } finally {
+        setIsLoading(false);
+        console.log('AuthContext: Chargement terminé');
       }
-    } catch (error) {
-      console.error('AuthContext: Erreur lors de la récupération -', error);
-    }
-    
-    // Forcer la fin du chargement
-    setIsLoading(false);
-    console.log('AuthContext: Chargement terminé');
+    };
+
+    initializeAuth();
   }, []);
   const login = (userData: AuthorizedUser) => {
     console.log('Connexion de:', userData.name);

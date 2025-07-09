@@ -2,15 +2,65 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="PrestigeWash - Calendrier de réservations VIP pour le club de lavage automobile" />
+    <meta name="author" content="PrestigeWash Club" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrestigeWash - Calendrier VIP</title>
+    <style>
+      /* CSS critique pour éviter le FOUC (Flash of Unstyled Content) */
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        background-color: #ffffff;
+        color: #1a1a1a;
+      }
+      
+      #root {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .loading-fallback {
+        padding: 2rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        gap: 1rem;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
     <div id="root">
-      <div style="padding: 2rem; text-align: center; font-family: Arial, sans-serif;">
-        <h1>🚗 PrestigeWash - Chargement...</h1>
-        <p>Si cette page reste affichée, il y a un problème avec JavaScript.</p>
+      <div class="loading-fallback">
+        <div class="loading-spinner"></div>
+        <h1>🚗 PrestigeWash</h1>
+        <p>Chargement de l'application...</p>
+        <noscript>
+          <p style="color: #e74c3c; font-weight: bold;">
+            JavaScript est requis pour utiliser cette application.
+          </p>
+        </noscript>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>

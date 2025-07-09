@@ -2,8 +2,8 @@ import React from 'react';
 import { getAppMode } from '../config/app';
 
 // Import direct des contextes
-import { DataProvider as ProductionDataProvider } from './DataContext';
-import { DataProvider as DevelopmentDataProvider } from './DataContext-dev';
+import { DataProvider as ProductionDataProvider, useData as useProdData } from './DataContext';
+import { DataProvider as DevelopmentDataProvider, useData as useDevData } from './DataContext-dev';
 
 interface SmartDataProviderProps {
   children: React.ReactNode;
@@ -29,13 +29,11 @@ export const SmartDataProvider: React.FC<SmartDataProviderProps> = ({ children }
 export const useSmartData = () => {
   const [appMode] = React.useState(() => getAppMode());
   
-  // Import dynamique du hook approprié
+  // Utiliser le hook approprié selon le mode
   if (appMode === 'production') {
-    const { useData } = require('./DataContext');
-    return useData();
+    return useProdData();
   } else {
-    const { useData } = require('./DataContext-dev');
-    return useData();
+    return useDevData();
   }
 };
 

@@ -5,8 +5,13 @@ import { SmartDataProvider } from './contexts/SmartDataProvider';
 import { AuthModeSelector } from './components/Auth/AuthModeSelector';
 import { UserHeader } from './components/Auth/UserHeader';
 import { Calendar } from './components/Calendar';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { BrowserCompatibilityChecker } from './components/BrowserCompatibilityChecker';
 
-const AppContent: React.FC = () => {  const { user, isAuthenticated, isLoading } = useAuth();  if (isLoading) {
+const AppContent: React.FC = () => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
@@ -22,14 +27,14 @@ const AppContent: React.FC = () => {  const { user, isAuthenticated, isLoading }
           <AuthModeSelector />
         </div>
       </div>
-    );
-  }
+    );  }
+
   const handleBookingCreate = (date: string, timeSlot: string) => {
     console.log(`Nouvelle réservation: ${user?.name} - ${date} - ${timeSlot}`);
   };
-
   return (
     <div className="app">
+      <BrowserCompatibilityChecker />
       <header className="app-header">
         <div className="app-title">
           <h1>🚗 Auto Wash Club VIP</h1>
@@ -71,13 +76,15 @@ const AppContent: React.FC = () => {  const { user, isAuthenticated, isLoading }
 
 function AppDevelopment() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <SmartDataProvider>
-          <AppContent />
-        </SmartDataProvider>
-      </ToastProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ToastProvider>
+          <SmartDataProvider>
+            <AppContent />
+          </SmartDataProvider>
+        </ToastProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

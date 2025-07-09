@@ -1,15 +1,85 @@
-/* Reset and base styles */
-* {
+/* Reset and base styles avec compatibilité cross-browser */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+* {
   margin: 0;
   padding: 0;
 }
 
+html {
+  /* Assure une base stable pour tous les navigateurs */
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   background-color: #ffffff;
   color: #1a1a1a;
   line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1;
+  text-rendering: optimizeLegibility;
+}
+
+/* Support pour les anciens navigateurs */
+main {
+  display: block;
+}
+
+/* Assure la compatibilité des liens et boutons */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  margin: 0;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+/* Support pour focus-visible (moderne) avec fallback */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #3498db;
+  outline-offset: 2px;
+}
+
+/* Fallback pour navigateurs plus anciens */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #3498db;
+  outline-offset: 2px;
+}
+
+/* Masquer l'outline par défaut si focus-visible est supporté */
+@supports selector(:focus-visible) {
+  button:focus:not(:focus-visible),
+  input:focus:not(:focus-visible),
+  select:focus:not(:focus-visible),
+  textarea:focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 /* ===== RESPONSIVE DESIGN OPTIMISÉ ===== */
@@ -58,22 +128,37 @@ body {
   }
 }
 
-/* Grid responsive */
+/* Grid responsive avec support cross-browser */
 .grid-responsive {
+  display: -ms-grid; /* IE10+ */
   display: grid;
   gap: 1rem;
+  grid-gap: 1rem; /* Fallback pour anciens navigateurs */
   grid-template-columns: 1fr;
+  -ms-grid-columns: 1fr; /* IE10+ */
+}
+
+/* Support IE10+ pour gap */
+@supports not (gap: 1rem) {
+  .grid-responsive {
+    margin: -0.5rem;
+  }
+  .grid-responsive > * {
+    margin: 0.5rem;
+  }
 }
 
 @media (min-width: 640px) {
   .grid-responsive {
     grid-template-columns: repeat(2, 1fr);
+    -ms-grid-columns: 1fr 1rem 1fr; /* IE10+ */
   }
 }
 
 @media (min-width: 1024px) {
   .grid-responsive {
     grid-template-columns: repeat(3, 1fr);
+    -ms-grid-columns: 1fr 1rem 1fr 1rem 1fr; /* IE10+ */
   }
 }
 
@@ -106,11 +191,24 @@ body {
   }
 }
 
-/* Grid du calendrier responsive */
+/* Grid du calendrier responsive avec support cross-browser */
 .calendar-grid {
+  display: -ms-grid; /* IE10+ */
   display: grid;
   gap: 0.5rem;
+  grid-gap: 0.5rem; /* Fallback */
   grid-template-columns: repeat(7, 1fr);
+  -ms-grid-columns: 1fr 0.5rem 1fr 0.5rem 1fr 0.5rem 1fr 0.5rem 1fr 0.5rem 1fr 0.5rem 1fr; /* IE10+ */
+}
+
+/* Fallback pour navigateurs sans support gap */
+@supports not (gap: 0.5rem) {
+  .calendar-grid {
+    margin: -0.25rem;
+  }
+  .calendar-grid > * {
+    margin: 0.25rem;
+  }
 }
 
 @media (max-width: 640px) {
