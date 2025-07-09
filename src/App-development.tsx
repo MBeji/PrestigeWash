@@ -8,6 +8,8 @@ import { Calendar } from './components/Calendar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { BrowserCompatibilityChecker } from './components/BrowserCompatibilityChecker';
 
+console.log('🚀 [App-dev] Import terminé');
+
 const AppContent: React.FC = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
 

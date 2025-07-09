@@ -3,64 +3,51 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './styles/compatibility.css'
+import App from './App-development.tsx'
 
-// Version de debugging pour identifier le problème sur Vercel
-console.log('[DEBUG] 1. Début du chargement main.tsx');
+console.log('🚀 [1] Main.tsx: Démarrage de l\'application');
 
-// Test si les imports de base fonctionnent
-try {
-  console.log('[DEBUG] 2. Imports de base OK');
+// Version avec debugging détaillé
+function DebugApp() {
+  console.log('🔍 [2] DebugApp: Début du composant');
   
-  // Test si le DOM est prêt
-  const rootElement = document.getElementById('root');
-  console.log('[DEBUG] 3. Root element:', rootElement);
-  
-  if (!rootElement) {
-    console.error('[ERROR] Root element non trouvé');
-    throw new Error('Root element non trouvé');
-  }
-  
-  // Test si React peut créer une root
-  const root = createRoot(rootElement);
-  console.log('[DEBUG] 4. React root créée:', root);
-  
-  // Version ultra-minimale pour test
-  const TestApp = () => {
-    console.log('[DEBUG] 5. TestApp rendu');
+  try {
+    console.log('🔍 [3] DebugApp: Tentative d\'import de App');
+    return <App />;
+  } catch (error) {
+    console.error('❌ [ERROR] DebugApp: Erreur lors du rendu de App:', error);
     return (
-      <div style={{ padding: '2rem', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-        <h1>🚗 PrestigeWash - Debug Mode</h1>
-        <p>Si vous voyez ce message, React fonctionne correctement.</p>
-        <p>Timestamp: {new Date().toISOString()}</p>
-        <p>Environment: {import.meta.env.MODE}</p>
-        <p>Navigateur: {navigator.userAgent}</p>
+      <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
+        <h1>� Erreur dans l'application</h1>
+        <p>Une erreur s'est produite lors du chargement de l'application principale.</p>
+        <pre style={{ background: '#f0f0f0', padding: '1rem', marginTop: '1rem' }}>
+          {error instanceof Error ? error.message : String(error)}
+        </pre>
       </div>
     );
-  };
+  }
+}
+
+console.log('🎯 [4] Main.tsx: Tentative de montage de React');
+
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  console.error('❌ [ERROR] Élément root non trouvé !');
+} else {
+  console.log('✅ [5] Élément root trouvé, création de createRoot');
   
-  console.log('[DEBUG] 6. Début du rendu React');
-  
-  root.render(
-    <StrictMode>
-      <TestApp />
-    </StrictMode>
-  );
-  
-  console.log('[DEBUG] 7. Rendu React terminé avec succès');
-  
-} catch (error) {
-  console.error('[ERROR] Erreur dans main.tsx:', error);
-  
-  // Fallback d'urgence
-  const rootElement = document.getElementById('root');
-  if (rootElement) {
-    rootElement.innerHTML = `
-      <div style="padding: 2rem; text-align: center; color: red; font-family: Arial, sans-serif;">
-        <h1>🚨 Erreur de chargement</h1>
-        <p>Erreur détectée: ${(error as Error).message}</p>
-        <p>Timestamp: ${new Date().toISOString()}</p>
-        <button onclick="location.reload()">Recharger</button>
-      </div>
-    `;
+  try {
+    const root = createRoot(rootElement);
+    console.log('✅ [6] createRoot créé avec succès');
+    
+    root.render(
+      <StrictMode>
+        <DebugApp />
+      </StrictMode>
+    );
+    
+    console.log('✅ [7] Application montée avec succès');
+  } catch (error) {
+    console.error('❌ [ERROR] Erreur lors du montage de React:', error);
   }
 }
