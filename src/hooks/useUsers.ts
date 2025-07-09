@@ -30,8 +30,8 @@ export const useUsers = (): UseUsersReturn => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { showError, showSuccess } = useToast()
-
-  // Récupérer tous les utilisateurs  const fetchUsers = async () => {
+  // Récupérer tous les utilisateurs
+  const fetchUsers = async () => {
     try {
       setLoading(true)
       setError(null)
