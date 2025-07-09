@@ -1,53 +1,75 @@
 // Polyfills pour la compatibilité cross-browser
 
-// Promise polyfill pour IE11 (version simple)
-if (typeof Promise === 'undefined') {
-  // Version très basique de Promise pour IE11
-  // @ts-ignore
-  window.Promise = function(executor: any) {
-    // @ts-ignore
-    const self = this;
-    // @ts-ignore
-    self.state = 'pending';
-    // @ts-ignore
-    self.value = undefined;
+// Vérification sécurisée de l'environnement
+const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
 
-    function resolve(result: any) {
+if (isBrowser) {
+  // Promise polyfill pour IE11 - seulement si vraiment nécessaire
+  if (typeof Promise === 'undefined') {
+    console.warn('Promise polyfill chargé pour IE11');
+    // Version minimaliste qui ne casse pas les navigateurs modernes
+    // @ts-ignore
+    window.Promise = function(executor: any) {
       // @ts-ignore
-      if (self.state === 'pending') {
-        // @ts-ignore
-        self.state = 'fulfilled';
-        // @ts-ignore
-        self.value = result;
-      }
-    }
-
-    function reject(error: any) {
+      const self = this;
       // @ts-ignore
-      if (self.state === 'pending') {
-        // @ts-ignore
-        self.state = 'rejected';
-        // @ts-ignore
-        self.value = error;
-      }
-    }
+      self.state = 'pending';
+      // @ts-ignore
+      self.value = undefined;
 
-    // @ts-ignore
-    this.then = function(onFulfilled?: any, onRejected?: any) {
-      return {
-        then: function(callback: any) {
-          return callback && callback();
+      function resolve(result: any) {
+        // @ts-ignore
+        if (self.state === 'pending') {
+          // @ts-ignore
+          self.state = 'fulfilled';
+          // @ts-ignore
+          self.value = result;
+        }
+      }
+
+      function reject(error: any) {
+        // @ts-ignore
+        if (self.state === 'pending') {
+          // @ts-ignore
+          self.state = 'rejected';
+          // @ts-ignore
+          self.value = error;
+        }
+      }
+
+      // @ts-ignore
+      this.then = function(onFulfilled?: any, onRejected?: any) {
+        try {
+          // @ts-ignore
+          if (self.state === 'fulfilled' && onFulfilled) {
+            // @ts-ignore
+            return onFulfilled(self.value);
+          }
+          // @ts-ignore
+          if (self.state === 'rejected' && onRejected) {
+            // @ts-ignore
+            return onRejected(self.value);
+          }
+          return this;
+        } catch (error) {
+          console.error('Promise polyfill error:', error);
+          return this;
         }
       };
-    };
 
-    try {
-      executor(resolve, reject);
-    } catch (ex) {
-      reject(ex);
-    }
-  };
-}
+      // @ts-ignore
+      this.catch = function(onRejected?: any) {
+        // @ts-ignore
+        return this.then(null, onRejected);
+      };
+
+      try {
+        executor(resolve, reject);
+      } catch (ex) {
+        reject(ex);
+      }
+    };
+  }
 
 // Object.assign polyfill pour IE
 if (typeof Object.assign !== 'function') {
@@ -168,5 +190,7 @@ if (typeof performance.now === 'undefined') {
     return Date.now();
   };
 }
+
+} // Fermeture du bloc isBrowser
 
 export {};

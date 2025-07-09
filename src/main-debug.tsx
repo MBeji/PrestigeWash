@@ -1,10 +1,7 @@
-import './polyfills';
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import './styles/compatibility.css'
 
-// Version de debugging pour identifier le problème sur Vercel
+// Version de debugging minimale pour identifier le problème
 console.log('[DEBUG] 1. Début du chargement main.tsx');
 
 // Test si les imports de base fonctionnent
@@ -28,12 +25,10 @@ try {
   const TestApp = () => {
     console.log('[DEBUG] 5. TestApp rendu');
     return (
-      <div style={{ padding: '2rem', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-        <h1>🚗 PrestigeWash - Debug Mode</h1>
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h1>🚗 PrestigeWash - Test Mode</h1>
         <p>Si vous voyez ce message, React fonctionne correctement.</p>
         <p>Timestamp: {new Date().toISOString()}</p>
-        <p>Environment: {import.meta.env.MODE}</p>
-        <p>Navigateur: {navigator.userAgent}</p>
       </div>
     );
   };
