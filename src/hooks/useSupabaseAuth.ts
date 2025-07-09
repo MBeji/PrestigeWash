@@ -506,8 +506,49 @@ export const useSupabaseAuth = () => {
     required: boolean;
     user?: AuthorizedUser;
     temporaryPassword?: string;
-  } => {
-    return requiresPasswordSetup(name);
+  } => {    return requiresPasswordSetup(name);
+  }
+
+  // Configuration du mot de passe initial par nom (nouvelle version)
+  const setupInitialPasswordByName = async (name: string, temporaryPassword: string, newPassword: string): Promise<PasswordSetupResult> => {
+    try {
+      // Étape 1: Valider et définir le mot de passe localement
+      const result = setInitialPassword(name, temporaryPassword, newPassword);
+      
+      if (!result.success) {
+        showError('Erreur de configuration', result.error || 'Impossible de définir le mot de passe');
+        return result;
+      }
+
+      // Étape 2: Connecter automatiquement l'utilisateur après la configuration
+      const authResult = authenticateUserByName(name, newPassword);
+      if (authResult.success && authResult.user) {
+        const supabaseUser: SupabaseUser = {
+          id: authResult.user.id,
+          email: authResult.user.email,
+          name: authResult.user.name,
+          role: authResult.user.role,
+          title: authResult.user.title,
+          canBook: authResult.user.canBook
+        };
+        
+        setAuthState(prev => ({
+          ...prev,
+          user: supabaseUser,
+          session: null,
+          loading: false,
+          error: null
+        }));
+        
+        showSuccess('Première connexion réussie', `Bienvenue ${authResult.user.name}! Votre mot de passe a été configuré avec succès.`);
+      }
+      
+      return { success: true };
+    } catch (error) {
+      const errorMessage = 'Erreur lors de la configuration du mot de passe';
+      showError('Erreur de configuration', errorMessage);
+      return { success: false, error: errorMessage };
+    }
   }
 
   return {
@@ -521,6 +562,7 @@ export const useSupabaseAuth = () => {
     setupInitialPassword,
     checkPasswordSetupRequired,
     localSignInByName,
-    checkPasswordSetupRequiredByName
+    checkPasswordSetupRequiredByName,
+    setupInitialPasswordByName
   }
 }

@@ -31,12 +31,20 @@
 - **Validation** : Contrôle que le nom contient au moins 2 caractères
 - **Indicateurs visuels** : Badges colorés selon le mode d'authentification
 
-### 4. Configuration
+### 4. Configuration et création de compte
 
 **Fichier modifié** : `src/components/Auth/FirstLoginSetup.tsx`
 
 - **Correction** : Suppression de la variable `temporaryPassword` inutilisée
+- **Nouvelle fonction** : Utilisation de `setupInitialPasswordByName` au lieu de `setupInitialPassword`
+- **Création de compte** : Processus complet de première connexion avec activation du compte
 - **Compatibilité** : Fonctionne avec le nouveau système de nom
+
+**Fichier modifié** : `src/hooks/useSupabaseAuth.ts`
+
+- **Nouvelle fonction** : `setupInitialPasswordByName` - Configuration complète par nom
+- **Processus complet** : Validation → Configuration → Activation → Connexion automatique
+- **Gestion d'erreurs** : Messages appropriés et récupération des erreurs
 
 ## 📋 Fonctionnalités disponibles
 
@@ -44,6 +52,7 @@
 - ✅ Connexion avec nom d'utilisateur (pas email)
 - ✅ Détection automatique du mode (local/Supabase)
 - ✅ Première connexion avec mot de passe temporaire
+- ✅ **Création de compte automatique** lors de la première connexion
 - ✅ Changement de mot de passe obligatoire
 - ✅ Gestion des tentatives et verrouillage
 

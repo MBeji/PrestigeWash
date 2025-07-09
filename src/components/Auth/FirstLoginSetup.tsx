@@ -23,7 +23,7 @@ export const FirstLoginSetup: React.FC<FirstLoginSetupProps> = ({
   const [showTempPassword, setShowTempPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
 
-  const { setupInitialPassword } = useSupabaseAuth()
+  const { setupInitialPasswordByName } = useSupabaseAuth()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -64,9 +64,8 @@ export const FirstLoginSetup: React.FC<FirstLoginSetupProps> = ({
 
     setIsLoading(true)
     
-    try {
-      const result = await setupInitialPassword(
-        email,
+    try {      const result = await setupInitialPasswordByName(
+        email, // Ici c'est le nom d'utilisateur passé comme "email"
         formData.tempPassword,
         formData.newPassword
       )
