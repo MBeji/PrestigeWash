@@ -1,7 +1,7 @@
 import React from 'react';
-import { getAppMode, config } from '../config/app';
+import { getAppMode, config, logConfig } from '../config/app';
 
-// Import seulement du contexte de développement (toujours sûr)
+// Import conditionnel des contextes
 import { DataProvider as DevelopmentDataProvider, useData as useDevData } from './DataContext-dev';
 
 interface SmartDataProviderProps {
@@ -11,13 +11,8 @@ interface SmartDataProviderProps {
 export const SmartDataProvider: React.FC<SmartDataProviderProps> = ({ children }) => {
   const [appMode] = React.useState(() => {
     console.log('🔧 [SMART] Détection du mode d\'application...');
-    console.log('🔧 [SMART] Config Supabase:', {
-      hasSupabase: config.hasSupabase,
-      url: config.supabaseUrl ? 'Définie' : 'Non définie',
-      key: config.supabaseAnonKey ? 'Définie' : 'Non définie'
-    });
+    logConfig();
     
-    // Forcer le mode développement si Supabase n'est pas configuré
     if (!config.hasSupabase) {
       console.log('🔧 [SMART] Supabase non configuré - Mode développement forcé');
       return 'development';
@@ -29,18 +24,35 @@ export const SmartDataProvider: React.FC<SmartDataProviderProps> = ({ children }
   });
   
   React.useEffect(() => {
-    console.log(`🔧 DataProvider Mode: ${appMode}`);
-    console.log('🔧 Supabase configuré:', config.hasSupabase);
+    console.log(`🔧 [SMART] DataProvider Mode actuel: ${appMode}`);
+    console.log('🔧 [SMART] Supabase configuré:', config.hasSupabase);
   }, [appMode]);
-  // TOUJOURS utiliser le mode développement pour éviter les erreurs Supabase
-  console.log('🧪 [SMART] Utilisation forcée du DataContext Mock (Développement)');
+
+  // Utiliser le bon provider selon la configuration
+  if (config.hasSupabase) {
+    console.log('🗄️ [SMART] Tentative d\'utilisation de Supabase...');
+    
+    // Import dynamique de Supabase seulement si configuré
+    try {
+      // Pour l'instant, on utilise toujours le mode dev pour éviter les erreurs
+      // TODO: Implémenter l'import conditionnel de DataContext quand stable
+      console.log('⚠️ [SMART] Supabase détecté mais utilisation du mode dev pour stabilité');
+      return <DevelopmentDataProvider>{children}</DevelopmentDataProvider>;
+    } catch (error) {
+      console.error('❌ [SMART] Erreur lors du chargement de Supabase:', error);
+      console.log('🔄 [SMART] Fallback vers le mode développement');
+      return <DevelopmentDataProvider>{children}</DevelopmentDataProvider>;
+    }
+  }
+  
+  console.log('🧪 [SMART] Utilisation du DataContext de développement');
   return <DevelopmentDataProvider>{children}</DevelopmentDataProvider>;
 };
 
 // Hook unifié pour utiliser les données
 export const useSmartData = () => {
-  // TOUJOURS utiliser les données de développement
-  console.log('🧪 [SMART] Utilisation forcée des données de développement');
+  // Pour l'instant, toujours utiliser les données de développement
+  console.log('🧪 [SMART] Utilisation des données de développement');
   return useDevData();
 };
 

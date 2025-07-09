@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase, type SupabaseUser } from '../lib/supabase'
+import { requireSupabase, withSupabase, type SupabaseUser } from '../lib/supabase'
 import type { Session, User, AuthError } from '@supabase/supabase-js'
 import { useToast } from '../contexts/ToastContext'
 
@@ -22,12 +22,12 @@ export const useSupabaseAuth = () => {
     error: null
   })
   const { showError, showSuccess } = useToast()
-
   // Transformer un utilisateur Supabase en SupabaseUser
   const transformUser = async (supabaseUser: User): Promise<SupabaseUser | null> => {
     try {
       // Récupérer les données du profil utilisateur
-      const { data: profile, error } = await supabase
+      const client = requireSupabase()
+      const { data: profile, error } = await client
         .from('users')
         .select('*')
         .eq('id', supabaseUser.id)
@@ -54,12 +54,11 @@ export const useSupabaseAuth = () => {
 
   // Écouter les changements d'authentification
   useEffect(() => {
-    let mounted = true
-
-    // Récupérer la session actuelle
+    let mounted = true    // Récupérer la session actuelle
     const getSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        const client = requireSupabase()
+        const { data: { session }, error } = await client.auth.getSession()
         
         if (error) {
           setAuthState(prev => ({ ...prev, error, loading: false }))
@@ -91,45 +90,48 @@ export const useSupabaseAuth = () => {
           }))
         }
       }
-    }
-
-    getSession()
+    }    getSession()
 
     // Écouter les changements d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return
+    const result = withSupabase(client => {
+      const { data: { subscription } } = client.auth.onAuthStateChange(
+        async (event: string, session: Session | null) => {
+          if (!mounted) return
 
-        if (session?.user) {
-          const user = await transformUser(session.user)
-          setAuthState({
-            user,
-            session,
-            loading: false,
-            error: null
-          })
+          if (session?.user) {
+            const user = await transformUser(session.user)
+            setAuthState({
+              user,
+              session,
+              loading: false,
+              error: null
+            })
 
-          if (event === 'SIGNED_IN') {
-            showSuccess('Connexion réussie', `Bienvenue ${user?.name || 'Utilisateur'}`)
-          }
-        } else {
-          setAuthState({
-            user: null,
-            session: null,
-            loading: false,
-            error: null
-          })
+            if (event === 'SIGNED_IN') {
+              showSuccess('Connexion réussie', `Bienvenue ${user?.name || 'Utilisateur'}`)
+            }
+          } else {
+            setAuthState({
+              user: null,
+              session: null,
+              loading: false,
+              error: null
+            })
 
-          if (event === 'SIGNED_OUT') {
-            showSuccess('Déconnexion réussie', 'À bientôt !')
+            if (event === 'SIGNED_OUT') {
+              showSuccess('Déconnexion réussie', 'À bientôt !')
+            }
           }
         }
+      )
+      return () => {
+        subscription.unsubscribe()
       }
-    )
+    })
 
     return () => {
       mounted = false
-      subscription.unsubscribe()
+      result?.()
     }
   }, [showError, showSuccess])
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { requireSupabase, withSupabase } from '../lib/supabase'
 import { useToast } from '../contexts/ToastContext'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -38,13 +38,14 @@ export const useBookings = (): UseBookingsReturn => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { showError, showSuccess } = useToast()
-
   // Récupérer toutes les réservations
-  const fetchBookings = async () => {    try {
+  const fetchBookings = async () => {
+    try {
       setLoading(true)
       setError(null)
 
-      const { data, error: fetchError } = await supabase
+      const client = requireSupabase()
+      const { data, error: fetchError } = await client
         .from('bookings')
         .select(`
           id,
@@ -86,7 +87,6 @@ export const useBookings = (): UseBookingsReturn => {
       setLoading(false)
     }
   }
-
   // Créer une nouvelle réservation
   const createBooking = async (userId: string, date: Date, timeSlot: string): Promise<boolean> => {
     try {
@@ -97,7 +97,8 @@ export const useBookings = (): UseBookingsReturn => {
         return false
       }
 
-      const { data, error: insertError } = await supabase
+      const client = requireSupabase()
+      const { data, error: insertError } = await client
         .from('bookings')
         .insert({
           user_id: userId,
@@ -149,11 +150,11 @@ export const useBookings = (): UseBookingsReturn => {
       return false
     }
   }
-
   // Annuler une réservation
   const cancelBooking = async (bookingId: string): Promise<boolean> => {
     try {
-      const { error: deleteError } = await supabase
+      const client = requireSupabase()
+      const { error: deleteError } = await client
         .from('bookings')
         .delete()
         .eq('id', bookingId)
@@ -240,23 +241,26 @@ export const useBookings = (): UseBookingsReturn => {
   useEffect(() => {
     fetchBookings()
   }, [])
-
   // S'abonner aux changements en temps réel
   useEffect(() => {
-    const channel = supabase
-      .channel('bookings_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'bookings' },
-        () => {
-          // Recharger les données quand il y a des changements
-          fetchBookings()
-        }
-      )
-      .subscribe()
+    const result = withSupabase(client => {
+      const channel = client
+        .channel('bookings_changes')
+        .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'bookings' },
+          () => {
+            // Recharger les données quand il y a des changements
+            fetchBookings()
+          }
+        )
+        .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
+      return () => {
+        client.removeChannel(channel)
+      }
+    })
+
+    return result || undefined
   }, [])
 
   return {
